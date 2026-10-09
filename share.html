@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>רשימת הקניות שלי</title>
+<style>
+body{font-family:system-ui,Arial,sans-serif;background:#f4f6f8;margin:0;padding:16px;color:#222}
+.card{max-width:440px;margin:0 auto;background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 10px #0002}
+h1{font-size:20px;margin:0 0 6px}ul{padding-inline-start:20px;max-height:40vh;overflow:auto}
+button,a.btn{display:block;width:100%;box-sizing:border-box;text-align:center;margin:8px 0;padding:12px;border:0;border-radius:10px;font-size:16px;background:#2e7d32;color:#fff;text-decoration:none;cursor:pointer}
+.sec{background:#e8eaed;color:#222}.hint{font-size:13px;color:#555}
+</style></head><body><div class="card">
+<h1>🛒 קיבלת רשימת קניות</h1>
+<div id="sum" class="hint"></div><ul id="items"></ul>
+<button id="open">פתח באפליקציה</button>
+<button id="copy" class="sec">העתק קוד רשימה</button>
+<a class="btn sec" id="play" href="https://play.google.com/store/apps/details?id=com.onedrive.live.ShoppingList">אין לך את האפליקציה? הורד מ-Google Play</a>
+<p class="hint" id="msg">לחיצה על "פתח באפליקציה" מעתיקה את הרשימה ופותחת את האפליקציה, שתציע לייבא אותה. אם האפליקציה לא נפתחה – פתח אותה ידנית, והרשימה תזוהה מהלוח.</p>
+</div>
+<script>
+const code=location.hash.slice(1);
+async function decode(c){
+  const b=c.slice(1).replace(/-/g,'+').replace(/_/g,'/');
+  const bin=atob(b+'==='.slice((b.length+3)%4));
+  let u=Uint8Array.from(bin,ch=>ch.charCodeAt(0));
+  if(c[0]==='z'){const ds=new DecompressionStream('deflate-raw');const w=ds.writable.getWriter();w.write(u);w.close();u=new Uint8Array(await new Response(ds.readable).arrayBuffer());}
+  return JSON.parse(new TextDecoder().decode(u));
+}
+(async()=>{
+  try{const d=await decode(code);const ul=document.getElementById('items');
+    d.items.forEach(i=>{const li=document.createElement('li');li.textContent=i.t+(i.q?' ('+i.q+')':'');ul.appendChild(li);});
+    document.getElementById('sum').textContent=d.items.length+' פריטים';
+  }catch(e){document.getElementById('sum').textContent='לא ניתן לקרוא את הרשימה.';}
+})();
+const text='TOMLIST:'+code;
+async function cp(){try{await navigator.clipboard.writeText(text);return true}catch(e){return false}}
+document.getElementById('copy').onclick=async()=>{document.getElementById('msg').textContent=(await cp())?'הקוד הועתק. פתח את האפליקציה והוא יזוהה.':'ההעתקה נכשלה.';};
+document.getElementById('open').onclick=async()=>{await cp();location.href='tomapps://open';};
+</script></body></html>
