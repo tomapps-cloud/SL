@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>רשימת הקניות שלי</title>
+<html lang="en" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Shopping List</title>
 <style>
 body{font-family:system-ui,Arial,sans-serif;background:#f4f6f8;margin:0;padding:16px;color:#222}
 .card{max-width:440px;margin:0 auto;background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 10px #0002}
@@ -8,15 +8,34 @@ h1{font-size:20px;margin:0 0 6px}ul{padding-inline-start:20px;max-height:40vh;ov
 button,a.btn{display:block;width:100%;box-sizing:border-box;text-align:center;margin:8px 0;padding:12px;border:0;border-radius:10px;font-size:16px;background:#2e7d32;color:#fff;text-decoration:none;cursor:pointer}
 .sec{background:#e8eaed;color:#222}.hint{font-size:13px;color:#555}
 </style></head><body><div class="card">
-<h1>🛒 קיבלת רשימת קניות</h1>
+<h1>🛒 You received a shopping list</h1>
 <div id="sum" class="hint"></div><ul id="items"></ul>
-<button id="open">פתח באפליקציה</button>
-<button id="copy" class="sec">העתק קוד רשימה</button>
-<p class="hint" id="noapp"><b>אין לך את האפליקציה?</b> האפליקציה עדיין לא זמינה ב-Google Play. בקש מהשולח את קובץ ההתקנה (APK).</p>
-<p class="hint" id="msg">לחיצה על "פתח באפליקציה" מעתיקה את הרשימה ופותחת את האפליקציה, שתציע לייבא אותה. אם האפליקציה לא נפתחה – פתח אותה ידנית, והרשימה תזוהה מהלוח.</p>
+<button id="open">Open in app</button>
+<button id="copy" class="sec">Copy list code</button>
+<p class="hint" id="noapp"><b>Don't have the app?</b> It is not available on Google Play yet. Ask the sender for the installation file (APK).</p>
+<p class="hint" id="msg">Tapping "Open in app" copies the list and opens the app, which will offer to import it. If the app does not open, open it manually and the list will be detected from the clipboard.</p>
 </div>
 <script>
 const code=location.hash.slice(1);
+const HE=/^(he|iw)\b/i.test(navigator.language||'');
+const TX={
+ he:{title:'🛒 קיבלת רשימת קניות',open:'פתח באפליקציה',copy:'העתק קוד רשימה',
+  noapp:'<b>אין לך את האפליקציה?</b> האפליקציה עדיין לא זמינה ב-Google Play. בקש מהשולח את קובץ ההתקנה (APK).',
+  hint:'לחיצה על "פתח באפליקציה" מעתיקה את הרשימה ופותחת את האפליקציה, שתציע לייבא אותה. אם האפליקציה לא נפתחה – פתח אותה ידנית, והרשימה תזוהה מהלוח.',
+  items:' פריטים',bad:'לא ניתן לקרוא את הרשימה.',copied:'הקוד הועתק. פתח את האפליקציה והוא יזוהה.',fail:'ההעתקה נכשלה.',page:'רשימת הקניות שלי'},
+ en:{title:'🛒 You received a shopping list',open:'Open in app',copy:'Copy list code',
+  noapp:"<b>Don't have the app?</b> It is not available on Google Play yet. Ask the sender for the installation file (APK).",
+  hint:'Tapping "Open in app" copies the list and opens the app, which will offer to import it. If the app does not open, open it manually and the list will be detected from the clipboard.',
+  items:' items',bad:'Could not read the list.',copied:'Code copied. Open the app and it will be detected.',fail:'Copy failed.',page:'My Shopping List'}
+};
+const T=HE?TX.he:TX.en;
+if(HE){document.documentElement.lang='he';document.documentElement.dir='rtl';}
+document.title=T.page;
+document.querySelector('h1').textContent=T.title;
+document.getElementById('open').textContent=T.open;
+document.getElementById('copy').textContent=T.copy;
+document.getElementById('noapp').innerHTML=T.noapp;
+document.getElementById('msg').textContent=T.hint;
 async function decode(c){
   const b=c.slice(1).replace(/-/g,'+').replace(/_/g,'/');
   const bin=atob(b+'==='.slice((b.length+3)%4));
@@ -27,11 +46,11 @@ async function decode(c){
 (async()=>{
   try{const d=await decode(code);const ul=document.getElementById('items');
     d.items.forEach(i=>{const li=document.createElement('li');li.textContent=i.t+(i.q?' ('+i.q+')':'');ul.appendChild(li);});
-    document.getElementById('sum').textContent=d.items.length+' פריטים';
-  }catch(e){document.getElementById('sum').textContent='לא ניתן לקרוא את הרשימה.';}
+    document.getElementById('sum').textContent=d.items.length+T.items;
+  }catch(e){document.getElementById('sum').textContent=T.bad;}
 })();
 const text='TOMLIST:'+code;
 async function cp(){try{await navigator.clipboard.writeText(text);return true}catch(e){return false}}
-document.getElementById('copy').onclick=async()=>{document.getElementById('msg').textContent=(await cp())?'הקוד הועתק. פתח את האפליקציה והוא יזוהה.':'ההעתקה נכשלה.';};
+document.getElementById('copy').onclick=async()=>{document.getElementById('msg').textContent=(await cp())?T.copied:T.fail;};
 document.getElementById('open').onclick=async()=>{await cp();location.href='tomapps://open';};
 </script></body></html>
