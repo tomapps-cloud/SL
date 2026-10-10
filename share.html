@@ -17,7 +17,7 @@ button,a.btn{display:block;width:100%;box-sizing:border-box;text-align:center;ma
 </div>
 <script>
 const code=location.hash.slice(1);
-const HE=/^(he|iw)\b/i.test(navigator.language||'');
+const BROWSER_HE=/^(he|iw)\b/i.test(navigator.language||'');
 const TX={
  he:{title:'🛒 קיבלת רשימת קניות',open:'פתח באפליקציה',copy:'העתק קוד רשימה',
   noapp:'<b>אין לך את האפליקציה?</b> האפליקציה עדיין לא זמינה ב-Google Play. בקש מהשולח את קובץ ההתקנה (APK).',
@@ -28,14 +28,18 @@ const TX={
   hint:'Tapping "Open in app" copies the list and opens the app, which will offer to import it. If the app does not open, open it manually and the list will be detected from the clipboard.',
   items:' items',bad:'Could not read the list.',copied:'Code copied. Open the app and it will be detected.',fail:'Copy failed.',page:'My Shopping List'}
 };
-const T=HE?TX.he:TX.en;
-if(HE){document.documentElement.lang='he';document.documentElement.dir='rtl';}
-document.title=T.page;
-document.querySelector('h1').textContent=T.title;
-document.getElementById('open').textContent=T.open;
-document.getElementById('copy').textContent=T.copy;
-document.getElementById('noapp').innerHTML=T.noapp;
-document.getElementById('msg').textContent=T.hint;
+let T=BROWSER_HE?TX.he:TX.en;
+function applyLang(he){
+  T=he?TX.he:TX.en;
+  document.documentElement.lang=he?'he':'en';document.documentElement.dir=he?'rtl':'ltr';
+  document.title=T.page;
+  document.querySelector('h1').textContent=T.title;
+  document.getElementById('open').textContent=T.open;
+  document.getElementById('copy').textContent=T.copy;
+  document.getElementById('noapp').innerHTML=T.noapp;
+  document.getElementById('msg').textContent=T.hint;
+}
+applyLang(BROWSER_HE);
 async function decode(c){
   const b=c.slice(1).replace(/-/g,'+').replace(/_/g,'/');
   const bin=atob(b+'==='.slice((b.length+3)%4));
@@ -44,7 +48,7 @@ async function decode(c){
   return JSON.parse(new TextDecoder().decode(u));
 }
 (async()=>{
-  try{const d=await decode(code);const ul=document.getElementById('items');
+  try{const d=await decode(code);if(d.l==='he'||d.l==='en'){applyLang(d.l==='he');}const ul=document.getElementById('items');
     d.items.forEach(i=>{const li=document.createElement('li');li.textContent=i.t+(i.q?' ('+i.q+')':'');ul.appendChild(li);});
     document.getElementById('sum').textContent=d.items.length+T.items;
   }catch(e){document.getElementById('sum').textContent=T.bad;}
