@@ -11,7 +11,6 @@ button,a.btn{display:block;width:100%;box-sizing:border-box;text-align:center;ma
 <h1>🛒 You received a shopping list</h1>
 <div id="sum" class="hint"></div><ul id="items"></ul>
 <button id="open">Open in app</button>
-<button id="copy" class="sec">Copy list code</button>
 <p class="hint" id="noapp"><b>Don't have the app?</b> It is not available on Google Play yet. Ask the sender for the installation file (APK).</p>
 <p class="hint" id="msg">Tapping "Open in app" copies the list and opens the app, which will offer to import it. If the app does not open, open it manually and the list will be detected from the clipboard.</p>
 </div>
@@ -35,7 +34,6 @@ function applyLang(he){
   document.title=T.page;
   document.querySelector('h1').textContent=T.title;
   document.getElementById('open').textContent=T.open;
-  document.getElementById('copy').textContent=T.copy;
   document.getElementById('noapp').innerHTML=T.noapp;
   document.getElementById('msg').textContent=T.hint;
 }
@@ -55,6 +53,5 @@ async function decode(c){
 })();
 const text='TOMLIST:'+code;
 async function cp(){try{await navigator.clipboard.writeText(text);return true}catch(e){return false}}
-document.getElementById('copy').onclick=async()=>{document.getElementById('msg').textContent=(await cp())?T.copied:T.fail;};
-document.getElementById('open').onclick=async()=>{await cp();location.href='tomapps://open';};
+document.getElementById('open').onclick=async()=>{await cp();location.href='tomapps://open?c='+text;};
 </script></body></html>
